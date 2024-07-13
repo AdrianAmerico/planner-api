@@ -139,6 +139,16 @@ public class TripController {
 		if (trip.isPresent()) {
 			Trip rawTrip = trip.get();
 
+			if (LocalDateTime.parse(payload.occurs_at(), DateTimeFormatter.ISO_DATE_TIME)
+					.isBefore(rawTrip.getStartsAt())) {
+				throw new IllegalArgumentException("A data de ocorrência deve ser após a data de início da viagem");
+			}
+
+			if (LocalDateTime.parse(payload.occurs_at(), DateTimeFormatter.ISO_DATE_TIME)
+					.isAfter(rawTrip.getEndsAt())) {
+				throw new IllegalArgumentException("A data de ocorrência deve ser antes da data de término da viagem");
+			}
+
 			ActivityResponse activityResponse = this.activityService.registerActivity(payload, rawTrip);
 
 			return ResponseEntity.ok(activityResponse);
