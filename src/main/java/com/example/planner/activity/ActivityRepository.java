@@ -7,5 +7,4 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ActivityRepository extends JpaRepository<Activity, UUID> {
   List<Activity> findByTripId(UUID tripId);
-
 }
