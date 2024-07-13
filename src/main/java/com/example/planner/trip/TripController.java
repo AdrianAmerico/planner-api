@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.planner.activities.ActivityData;
+import com.example.planner.activities.ActivityRequestPayload;
+import com.example.planner.activities.ActivityResponse;
+import com.example.planner.activities.ActivityService;
 import com.example.planner.participant.ParticipantCreateResponse;
 import com.example.planner.participant.ParticipantData;
 import com.example.planner.participant.ParticipantRequestPayload;
@@ -29,6 +33,9 @@ public class TripController {
 
 	@Autowired
 	private TripRepository repository;
+
+	@Autowired
+	private ActivityService activityService;
 
 	@PostMapping
 	public ResponseEntity<TripCreateResponse> createTrip(@RequestBody TripRequestPayload payload) {
@@ -83,7 +90,7 @@ public class TripController {
 		return ResponseEntity.notFound().build();
 	}
 
-	@PostMapping("/{id}")
+	@PostMapping("/{id}/invite")
 	public ResponseEntity<ParticipantCreateResponse> createTrip(@PathVariable UUID id,
 			@RequestBody ParticipantRequestPayload payload) {
 		Optional<Trip> trip = this.repository.findById(id);
@@ -109,5 +116,28 @@ public class TripController {
 		List<ParticipantData> participantList = this.participantService.getAllParticipantsFromEvent(id);
 
 		return ResponseEntity.ok(participantList);
+	}
+
+	@GetMapping("/{id}/activities")
+	public ResponseEntity<List<ActivityData>> getAllActivities(@PathVariable UUID id) {
+		List<ActivityData> activitiesList = this.activityService.getAllActivitiesFromId(id);
+
+		return ResponseEntity.ok(activitiesList);
+	}
+
+	@PostMapping("/{id}/activities")
+	public ResponseEntity<ActivityResponse> registerActivity(@PathVariable UUID id,
+			@RequestBody ActivityRequestPayload payload) {
+		Optional<Trip> trip = this.repository.findById(id);
+
+		if (trip.isPresent()) {
+			Trip rawTrip = trip.get();
+
+			ActivityResponse activityResponse = this.activityService.registerActivity(payload, rawTrip);
+
+			return ResponseEntity.ok(activityResponse);
+		}
+
+		return ResponseEntity.notFound().build();
 	}
 }
